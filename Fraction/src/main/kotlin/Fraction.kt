@@ -59,7 +59,7 @@ class Fraction(
     // Negate the fraction
     fun negate(): Fraction = -this
 
-    // **Add method for compatibility with the test**
+    // Add method
     fun add(other: Fraction): Fraction = this + other
 
     // Compare two fractions
