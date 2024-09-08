@@ -1,84 +1,88 @@
 package org.example
 
-import kotlin.math.sign
-
 class Fraction(
-    private val numerator: Int,
-    private val denominator: Int,
-    private val sign: Int = 1
+    numerator: Int,
+    denominator: Int,
+    sign: Int = 1
 ) : Comparable<Fraction> {
+
+    private val num: Int
+    private val den: Int
 
     init {
         require(denominator != 0) { "Denominator cannot be zero." }
-    }
 
-    // GCD to reduce fractions
-    private fun gcd(a: Int, b: Int): Int {
-        return if (b == 0) a else gcd(b, a % b)
-    }
+        // Determine the overall sign of the fraction
+        val overallSign = if (numerator * denominator * sign < 0) -1 else 1
 
-    // Return reduced numerator/denominator
-    private fun reduce(): Fraction {
+        // Reduce the fraction
         val gcd = gcd(Math.abs(numerator), Math.abs(denominator))
-        return Fraction(
-            numerator / gcd,
-            denominator / gcd,
-            if (numerator * denominator >= 0) 1 else -1
-        )
+
+        num = overallSign * Math.abs(numerator) / gcd
+        den = Math.abs(denominator) / gcd
     }
+
+    // GCD function to reduce the fraction
+    private fun gcd(a: Int, b: Int): Int = if (b == 0) a else gcd(b, a % b)
+
+    // LCM function to use in arithmetic operations
+    private fun lcm(a: Int, b: Int): Int = (a * b) / gcd(a, b)
 
     override fun toString(): String {
-        val absNumerator = Math.abs(numerator)
-        return if (sign == -1 && absNumerator != 0) "-$absNumerator/$denominator" else "$absNumerator/$denominator"
+        return if (num == 0) "0" else "$num/$den"
     }
 
-    // Addition operator
+    // Unary minus
+    operator fun unaryMinus(): Fraction = Fraction(num, den, -1)
+
+    // Addition
     operator fun plus(other: Fraction): Fraction {
-        val lcm = lcm(denominator, other.denominator)
-        val num1 = numerator * (lcm / denominator) * sign
-        val num2 = other.numerator * (lcm / other.denominator) * other.sign
-        return Fraction(num1 + num2, lcm).reduce()
+        val lcm = lcm(den, other.den)
+        val num1 = num * (lcm / den)
+        val num2 = other.num * (lcm / other.den)
+        return Fraction(num1 + num2, lcm)
     }
 
-    // Subtraction operator
-    operator fun minus(other: Fraction): Fraction {
-        return this + -other
-    }
+    // Subtraction
+    operator fun minus(other: Fraction): Fraction = this + -other
 
-    // Multiplication operator
+    // Multiplication
     operator fun times(other: Fraction): Fraction {
-        return Fraction(numerator * other.numerator, denominator * other.denominator, sign * other.sign).reduce()
+        return Fraction(num * other.num, den * other.den)
     }
 
-    // Division operator
+    // Division
     operator fun div(other: Fraction): Fraction {
-        return Fraction(numerator * other.denominator, denominator * other.numerator, sign * other.sign).reduce()
+        return Fraction(num * other.den, den * other.num)
     }
 
-    // Unary minus operator
-    operator fun unaryMinus(): Fraction {
-        return Fraction(numerator, denominator, -sign)
-    }
+    // Negate the fraction
+    fun negate(): Fraction = -this
 
-    // Comparable implementation
+    // **Add method for compatibility with the test**
+    fun add(other: Fraction): Fraction = this + other
+
+    // Compare two fractions
     override fun compareTo(other: Fraction): Int {
-        val diff = (this - other).numerator
-        return diff.sign
+        val lcm = lcm(den, other.den)
+        val num1 = num * (lcm / den)
+        val num2 = other.num * (lcm / other.den)
+        return num1.compareTo(num2)
     }
 
-    // Helper: Least Common Multiple
-    private fun lcm(a: Int, b: Int): Int {
-        return (a * b) / gcd(a, b)
-    }
-
-    // Equals and hashCode to compare fractions
+    // Equality check
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Fraction) return false
-        return this.compareTo(other) == 0
+        return other is Fraction && this.compareTo(other) == 0
     }
 
+    // Hash code implementation
     override fun hashCode(): Int {
-        return numerator.hashCode() * 31 + denominator.hashCode()
+        return num.hashCode() * 31 + den.hashCode()
     }
 }
+
+
+
+
+
+
